@@ -1,0 +1,152 @@
+<head>
+  <title>Penney's Game</title>
+	<meta charset="UTF-8"> 
+	<!-- jQuery Libraries -->
+	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<style>
+	  body{font-family:'Verdana';}
+		.container {width: 70%;}
+		form{ margin-top: 30px; margin-bottom: 30px; }
+		#simulation {text-align: center; }
+		#score_board { font-size:25px;}
+		#label {font-size:18px; }
+		#game {height:70px; font-size:40px; letter-spacing: 10px;}
+		.H {color: #6c74eb;}
+		.T {color: #eb896c;}
+	</style>
+</head>
+<body>
+  <div class="container">
+    <form>
+		<label for="penney_sequence">Your Chosen Sequence: </label>
+		<select class="form-control" id="penney_sequence">
+			<option value="HHH">HHH</option>
+			<option value="HHT">HHT</option>
+			<option value="HTH">HTH</option>
+			<option value="HTT">HTT</option>
+			<option value="THH">THH</option>
+			<option value="THT">THT</option>
+			<option value="TTH">TTH</option>
+			<option value="TTT">TTT</option>
+		</select>
+		<br><br>
+		<label for="you_sequence">My Chosen Sequence: </label>
+		<select  class="form-control"  id="you_sequence">
+			<option value="HHH">HHH</option>
+			<option value="HHT">HHT</option>
+			<option value="HTH">HTH</option>
+			<option value="HTT">HTT</option>
+			<option value="THH">THH</option>
+			<option value="THT">THT</option>
+			<option value="TTH">TTH</option>
+			<option value="TTT">TTT</option>
+		</select>
+		<br><br>
+		<label for="ntrials">Number of Games to Play: </label>
+		<input class="form-control" id="ntrials" value="3">
+		<br>
+		<button id="simulate" class="btn btn-success">Let's Play!</button>
+	</form>
+	<div id="simulation" style="display: block;" class="row">
+	  <div class="col-md-12">
+			<div id="score_board">
+				You: <span id="penney_score">0</span> 
+				&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+				Me: <span id="you_score">0</span>
+			</div>
+			<div id="game"></div>
+			<div id="label">
+				<p>Game <span id="game_count"></span> out of <span id="total_game"></span></p>
+				<button class="btn btn-info disabled" id="next_game">NEXT</button>
+				<button class="btn btn-info disabled" id="reset_game">RESET</button>
+			</div>
+		</div>
+	</div>
+  </div>
+  <script>
+	  var penneychoice, yourchoice, ntrials, currentGameCount
+		var coin_arr = '';
+    window.onload = function () {
+      $('#simulate').on('click', function(e) {
+        e.preventDefault();
+				penneychoice = $('#penney_sequence').val();
+				yourchoice = $('#you_sequence').val();
+				ntrials =  $('#ntrials').val();
+				if (penneychoice == yourchoice) {
+					alert('must choose different sequences');
+				} else {
+					playGame(1);
+					$('#total_game').html($('#ntrials').val());
+					$('#next_game').removeClass('disabled');
+				  $('#reset_game').removeClass('disabled');
+					$('#simulate').addClass('disabled');
+				}
+      });
+      $('#next_game').on('click', function(e) {
+        e.preventDefault();
+        playNextGame();
+      })
+			$('#reset_game').on('click', function() {
+				endGame();
+				$('#next_game').addClass('disabled');
+				$('#simulate').removeClass('disabled');
+				$('#reset_game').addClass('disabled');
+			})
+    };
+		
+    var playGame = function(cnt) {
+      $('#game_count').html(cnt);
+			flipOneCoin();
+			if (cnt == ntrials) {
+			  $('#next_game').addClass('disabled');
+			}
+    }
+		
+		var flipOneCoin = function() {
+		  var result;
+		  if (Math.random() <.5) { result = "H"; } 
+			else { result = "T"; }
+			$('#game').append('<span class="' + result + '">' + result + '<span>');
+			coin_arr = coin_arr + result;
+			var lastPattern = coin_arr.substring(coin_arr.length - 3);
+			if (lastPattern == penneychoice) {
+			  $('#penney_score').html(parseInt($('#penney_score').html())+1);
+			} else if (lastPattern == yourchoice) {
+			  $('#you_score').html(parseInt($('#you_score').html())+1);
+			} else {
+				setTimeout(flipOneCoin, 100);
+			}
+		}
+		
+    var playNextGame = function() {
+		  clearPrevGame();
+		  currentGameCount = parseInt($('#game_count').html());
+		  if (currentGameCount < ntrials) {
+				playGame(currentGameCount+1);
+			} else {
+			  alert('Game Finished!');
+			}
+    }
+		
+		var clearPrevGame = function() {
+		  $('#game').empty();
+			coin_arr = '';
+		}
+		
+		var endGame = function() {
+			clearPrevGame();
+		  $('#penney_score').html('0');
+			$('#you_score').html('0');
+			$('#game_count').empty();
+			$('#total_game').empty();
+		}
+  </script>
+</body>
